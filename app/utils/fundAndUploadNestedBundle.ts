@@ -70,7 +70,8 @@ async function bundleItems(itemMap: Map<string, DataItem>, ephemeralSigner: Arwe
  */
 async function uploadBundle(bundle: Bundle): Promise<string[]> {
 	const irys = await getIrys();
-
+	const uploader = irys.uploader.chunkedUploader;
+	// JESSE: How to use chunked uploader to create a TX
 	const tx = irys.createTransaction(bundle.getRaw(), {
 		tags: [
 			{ name: "Bundle-Format", value: "binary" },
