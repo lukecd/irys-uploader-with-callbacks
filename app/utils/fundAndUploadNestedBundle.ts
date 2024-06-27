@@ -70,8 +70,24 @@ async function bundleItems(itemMap: Map<string, DataItem>, ephemeralSigner: Arwe
  */
 async function uploadBundle(bundle: Bundle): Promise<string[]> {
 	const irys = await getIrys();
+	// Get the chunked uploader
 	const uploader = irys.uploader.chunkedUploader;
-	// JESSE: How to use chunked uploader to create a TX
+
+	// Setup event callbacks
+	uploader.on("chunkUpload", (chunkInfo) => {
+		console.log(
+			`Chunked Event: Uploaded Chunk number ${chunkInfo.id}, offset of ${chunkInfo.offset}, size ${chunkInfo.size} Bytes, with a total of ${chunkInfo.totalUploaded} bytes uploaded.`,
+		);
+	});
+
+	uploader.on("chunkError", (e) => {
+		console.error(`Chunked Event: Error uploading chunk number ${e.id} - ${e.res.statusText}`);
+	});
+
+	uploader.on("done", (finishRes) => {
+		console.log(`Chunked Event: Upload completed with ID ${finishRes.id}`);
+	});
+
 	const tx = irys.createTransaction(bundle.getRaw(), {
 		tags: [
 			{ name: "Bundle-Format", value: "binary" },
@@ -79,10 +95,11 @@ async function uploadBundle(bundle: Bundle): Promise<string[]> {
 		],
 	});
 	await tx.sign();
-	const res = await tx.uploadWithReceipt();
+	const receipt = await uploader.uploadTransaction(tx);
+
 	const manifestId = bundle.items[bundle.items.length - 1].id;
 	//   console.log(`Manifest ID: ${manifestId}`);
-	return [manifestId, res.id];
+	return [manifestId, receipt.data.id];
 }
 
 /**

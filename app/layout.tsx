@@ -17,8 +17,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-	title: "Base + Irys",
-	description: "Build Onchain Summer II Together",
+	title: "Irys Multi File Uploader With Callbacks",
+	description: "Upload and know what's up",
 };
 
 export default function RootLayout({
